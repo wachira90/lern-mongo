@@ -11,7 +11,8 @@ try {
   );
 
   // $options = array('sort' => array('tst' => -1));
-  $options = array('sort' => array('OrderBy' => -1));
+  // $options = array('sort' => array('OrderBy' => -1));
+  $options = array('sort' => array('OrderBy' => -1), 'limit' => 15, 'skip' => 0);
   $query = new MongoDB\Driver\Query($filter, $options);
   $result = $this->conn->executeQuery("testdb.collection", $query);
   header('Content-Type: application/json; charset=utf-8');
