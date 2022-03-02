@@ -82,7 +82,7 @@ function qry()
             );
 
             $query = new MongoDB\Driver\Query($filter, $options);
-            $result = $this->conn->executeQuery("interpoldb.rename", $query);
+            $result = $this->conn->executeQuery("testdb.test", $query);
             
             $d = $result->toArray();
             echo json_encode($d);
