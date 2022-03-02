@@ -53,3 +53,43 @@ try {
     state: 'MA'
 }
 ````
+
+
+## search result with count
+
+````
+function qry()
+    {
+        try {
+
+            $filter = array(
+                '$or' => array(
+                    array('n_fname' => new MongoDB\BSON\Regex('ดล', 'i')),
+                    array('n_lname' => new MongoDB\BSON\Regex('ดล', 'i'))
+                )
+           
+            );
+
+            // $options = array('sort' => array('tst' => -1));
+            // $options = array('sort' => array('OrderBy' => -1));
+            // $options = array('sort' => array('OrderBy' => -1), 'limit' => 10, 'skip' => 0);
+
+            //SKIP 1 FIRST RECCORD
+            $options = array(
+                'sort'         => array('tst' => -1),
+                'projection' => array('tst' => 1, 'n_fname' => 1),
+                'limit' => 10, 'skip' => 0
+            );
+
+            $query = new MongoDB\Driver\Query($filter, $options);
+            $result = $this->conn->executeQuery("interpoldb.rename", $query);
+            
+            $d = $result->toArray();
+            echo json_encode($d);
+            echo count($d );
+
+        } catch (MongoDB\Driver\Exception\RuntimeException $ex) {
+            show_error('Error while fetching : ' . $ex->getMessage(), 500);
+        }
+    }
+````
