@@ -20,7 +20,7 @@ $command = new MongoDB\Driver\Command([
     'cursor' => new stdClass,
 ]);
 
-$res =  $manager->executeCommand('interpoldb', $command);
+$res =  $manager->executeCommand('testdb', $command);
 $r = $res->toArray();
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode($r);
