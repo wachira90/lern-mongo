@@ -153,3 +153,36 @@ security
   authorization: enabled
 ````  
 
+## test authen 
+````  
+$ mongo
+
+> show dbs
+
+2017-01-08T10:48:51.823+0000 E QUERY    [main] Error: listDatabases failed:{
+  "ok" : 0,
+  "errmsg" : "not authorized on admin to execute command { listDatabases: 1.0 }",
+  "code" : 13,
+  "codeName" : "Unauthorized"
+}
+
+> use anotherDb
+switched to db anotherDb
+````  
+
+
+
+## login command 
+
+````  
+mongo -u 'superAdmin' -p 'superPassword' --authenticationDatabase 'admin'
+
+
+Note: เราสามารถใส่ -p แล้วเว้น password ไว้ได้เพื่อใส่ Password ทีหลัง จะได้ไม่เซฟ password ของเราไว้กับ bash/zsh history นั่นเอง
+
+````  
+
+
+
+
+
