@@ -1,0 +1,64 @@
+use bfixdb;
+
+db.createCollection("console", {
+        validator: {
+            $jsonSchema: {
+                bsonType: "object",
+                required: ["name", "type", "manufacturer", "price"],
+                properties: {
+                    name: {
+                        bsonType: "string",
+                        description: "must be a string and is required"
+                    },
+                    type: {
+                        bsonType: "string",
+                        description: "must be a string and is required"
+                    },
+                    manufacturer: {
+                        bsonType: "string",
+                        description: "must be a string and is required"
+                    },
+                    price: {
+                        bsonType: "decimal",
+                        description: "must be a decimal and is required"
+                    }
+                }
+            }
+        },
+        collation: {locale: "th", strength: 5},
+    },
+    function (err, res) {
+        if (!err) {
+            db.console.createIndex({name: 1});
+            db.console.createIndex({type: 1});
+            db.console.createIndex({manufacturer: 1});
+            db.console.createIndex({price: 1});
+        }
+    });
+
+db.console.insertMany([
+    {
+        name: "PlayStation 4",
+        type: "Console",
+        manufacturer: "Sony",
+        price: NumberDecimal("299.99")
+    },
+    {
+        name: "Xbox One",
+        type: "Console",
+        manufacturer: "Microsoft",
+        price: NumberDecimal("399.99")
+    },
+    {
+        name: "Switch",
+        type: "Console",
+        manufacturer: "Nintendo",
+        price: NumberDecimal("199.99")
+    }
+]); // Inserting some data
+
+db.console.find().pretty(); // Displaying the data
+db.console.find().explain("executionStats"); // Displaying the execution stats
+
+db.collection.createIndex({ "fieldName": 1 });
+db.collection.find({}).limit(10);
