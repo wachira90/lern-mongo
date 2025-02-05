@@ -1,0 +1,103 @@
+services:
+  mongo-primary:
+    image: mongo:latest
+    container_name: mongo-primary
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ulimits:
+      nofile:
+        soft: 64000
+        hard: 64000
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: admin
+    volumes:
+      - ./mongo-keyfile:/data/db/mongo-keyfile
+      - mongo_primary_data:/data/db
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--wiredTigerCacheSizeGB", "1", "--keyFile", "/data/db/mongo-keyfile"]
+
+  mongo-secondary:
+    image: mongo:latest
+    container_name: mongo-secondary
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ulimits:
+      nofile:
+        soft: 64000
+        hard: 64000
+    depends_on:
+      - mongo-primary
+    ports:
+      - 27018:27018
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    volumes:
+      - ./mongo-keyfile:/data/db/mongo-keyfile
+      - mongo_secondary_data:/data/db
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--port", "27018", "--wiredTigerCacheSizeGB", "1", "--keyFile", "/data/db/mongo-keyfile"]
+
+  mongo-arbiter:
+    image: mongo:latest
+    container_name: mongo-arbiter
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ulimits:
+      nofile:
+        soft: 64000
+        hard: 64000
+    depends_on:
+      - mongo-primary
+    ports:
+      - 27019:27019
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    volumes:
+      - ./mongo-keyfile:/data/db/mongo-keyfile
+      - mongo_arbiter_data:/data/db
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--port", "27019", "--wiredTigerCacheSizeGB", "1", "--keyFile", "/data/db/mongo-keyfile"]
+
+  mongo-setup:
+    image: mongo:latest
+    container_name: mongo-setup
+    depends_on:
+      - mongo-primary
+      - mongo-secondary
+      - mongo-arbiter
+    entrypoint: >
+      bash -c "
+      echo 'Waiting for MongoDB to start...'
+      && sleep 20
+      && mongosh --host mongo-primary:27017 -u ${MONGO_ROOT_USERNAME} -p ${MONGO_ROOT_PASSWORD} --authenticationDatabase admin /mongo-init.js
+      "
+    volumes:
+      - ./mongo-init.js:/mongo-init.js
+      - ./mongo-keyfile:/etc/secrets/keyfile
+      - mongo_setup_data:/data/db
+
+volumes:
+  mongo_primary_data:
+  mongo_secondary_data:
+  mongo_arbiter_data:
+  mongo_setup_data:
+
+networks:
+  default:
+    name: bfix-network
+    driver: bridge
